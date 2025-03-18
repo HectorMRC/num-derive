@@ -242,12 +242,13 @@ impl NumTraits {
 pub fn from_primitive(input: TokenStream) -> TokenStream {
     let ast = parse!(input as syn::DeriveInput);
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let import = NumTraits::new(&ast);
 
     let impl_ = if let Some(inner_ty) = newtype_inner(&ast.data) {
         quote! {
-            impl #import::FromPrimitive for #name {
+            impl #impl_generics #import::FromPrimitive for #name #ty_generics #where_clause {
                 #[inline]
                 fn from_i64(n: i64) -> ::core::option::Option<Self> {
                     <#inner_ty as #import::FromPrimitive>::from_i64(n).map(#name)
@@ -416,12 +417,13 @@ pub fn from_primitive(input: TokenStream) -> TokenStream {
 pub fn to_primitive(input: TokenStream) -> TokenStream {
     let ast = parse!(input as syn::DeriveInput);
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let import = NumTraits::new(&ast);
 
     let impl_ = if let Some(inner_ty) = newtype_inner(&ast.data) {
         quote! {
-            impl #import::ToPrimitive for #name {
+            impl #impl_generics #import::ToPrimitive for #name #ty_generics #where_clause {
                 #[inline]
                 fn to_i64(&self) -> ::core::option::Option<i64> {
                     <#inner_ty as #import::ToPrimitive>::to_i64(&self.0)
@@ -553,37 +555,39 @@ const NEWTYPE_ONLY: &str = "This trait can only be derived for newtypes";
 pub fn num_ops(input: TokenStream) -> TokenStream {
     let ast = parse!(input as syn::DeriveInput);
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+
     let inner_ty = newtype_inner(&ast.data).expect(NEWTYPE_ONLY);
     let impl_ = quote! {
-        impl ::core::ops::Add for #name {
+        impl #impl_generics ::core::ops::Add for #name #ty_generics #where_clause {
             type Output = Self;
             #[inline]
             fn add(self, other: Self) -> Self {
                 #name(<#inner_ty as ::core::ops::Add>::add(self.0, other.0))
             }
         }
-        impl ::core::ops::Sub for #name {
+        impl #impl_generics ::core::ops::Sub for #name #ty_generics #where_clause {
             type Output = Self;
             #[inline]
             fn sub(self, other: Self) -> Self {
                 #name(<#inner_ty as ::core::ops::Sub>::sub(self.0, other.0))
             }
         }
-        impl ::core::ops::Mul for #name {
+        impl #impl_generics ::core::ops::Mul for #name #ty_generics #where_clause {
             type Output = Self;
             #[inline]
             fn mul(self, other: Self) -> Self {
                 #name(<#inner_ty as ::core::ops::Mul>::mul(self.0, other.0))
             }
         }
-        impl ::core::ops::Div for #name {
+        impl #impl_generics ::core::ops::Div for #name #ty_generics #where_clause {
             type Output = Self;
             #[inline]
             fn div(self, other: Self) -> Self {
                 #name(<#inner_ty as ::core::ops::Div>::div(self.0, other.0))
             }
         }
-        impl ::core::ops::Rem for #name {
+        impl #impl_generics ::core::ops::Rem for #name #ty_generics #where_clause {
             type Output = Self;
             #[inline]
             fn rem(self, other: Self) -> Self {
@@ -602,12 +606,13 @@ pub fn num_ops(input: TokenStream) -> TokenStream {
 pub fn num_cast(input: TokenStream) -> TokenStream {
     let ast = parse!(input as syn::DeriveInput);
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let inner_ty = newtype_inner(&ast.data).expect(NEWTYPE_ONLY);
 
     let import = NumTraits::new(&ast);
 
     let impl_ = quote! {
-        impl #import::NumCast for #name {
+        impl #impl_generics #import::NumCast for #name #ty_generics #where_clause {
             #[inline]
             fn from<T: #import::ToPrimitive>(n: T) -> ::core::option::Option<Self> {
                 <#inner_ty as #import::NumCast>::from(n).map(#name)
@@ -625,12 +630,13 @@ pub fn num_cast(input: TokenStream) -> TokenStream {
 pub fn zero(input: TokenStream) -> TokenStream {
     let ast = parse!(input as syn::DeriveInput);
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let inner_ty = newtype_inner(&ast.data).expect(NEWTYPE_ONLY);
 
     let import = NumTraits::new(&ast);
 
     let impl_ = quote! {
-        impl #import::Zero for #name {
+        impl #impl_generics #import::Zero for #name #ty_generics #where_clause {
             #[inline]
             fn zero() -> Self {
                 #name(<#inner_ty as #import::Zero>::zero())
@@ -652,12 +658,13 @@ pub fn zero(input: TokenStream) -> TokenStream {
 pub fn one(input: TokenStream) -> TokenStream {
     let ast = parse!(input as syn::DeriveInput);
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let inner_ty = newtype_inner(&ast.data).expect(NEWTYPE_ONLY);
 
     let import = NumTraits::new(&ast);
 
     let impl_ = quote! {
-        impl #import::One for #name {
+        impl #impl_generics #import::One for #name #ty_generics #where_clause {
             #[inline]
             fn one() -> Self {
                 #name(<#inner_ty as #import::One>::one())
@@ -679,12 +686,13 @@ pub fn one(input: TokenStream) -> TokenStream {
 pub fn num(input: TokenStream) -> TokenStream {
     let ast = parse!(input as syn::DeriveInput);
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let inner_ty = newtype_inner(&ast.data).expect(NEWTYPE_ONLY);
 
     let import = NumTraits::new(&ast);
 
     let impl_ = quote! {
-        impl #import::Num for #name {
+        impl #impl_generics #import::Num for #name #ty_generics #where_clause {
             type FromStrRadixErr = <#inner_ty as #import::Num>::FromStrRadixErr;
             #[inline]
             fn from_str_radix(s: &str, radix: u32) -> ::core::result::Result<Self, Self::FromStrRadixErr> {
@@ -704,12 +712,13 @@ pub fn num(input: TokenStream) -> TokenStream {
 pub fn float(input: TokenStream) -> TokenStream {
     let ast = parse!(input as syn::DeriveInput);
     let name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
     let inner_ty = newtype_inner(&ast.data).expect(NEWTYPE_ONLY);
 
     let import = NumTraits::new(&ast);
 
     let impl_ = quote! {
-        impl #import::Float for #name {
+        impl #impl_generics #import::Float for #name #ty_generics #where_clause {
             #[inline]
             fn nan() -> Self {
                 #name(<#inner_ty as #import::Float>::nan())
@@ -954,11 +963,12 @@ pub fn signed(input: TokenStream) -> TokenStream {
     let ast = parse!(input as syn::DeriveInput);
     let name = &ast.ident;
     let inner_ty = newtype_inner(&ast.data).expect(NEWTYPE_ONLY);
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let import = NumTraits::new(&ast);
 
     let impl_ = quote! {
-        impl #import::Signed for #name {
+        impl #impl_generics #import::Signed for #name #ty_generics #where_clause {
             #[inline]
             fn abs(&self) -> Self {
                 #name(<#inner_ty as #import::Signed>::abs(&self.0))
